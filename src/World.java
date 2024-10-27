@@ -10,6 +10,10 @@ public class World {
     public World(String fileName) {
         listeAeroports = new ArrayList<>();
 
+        // Chemin absolu du fichier CSV
+        fileName = "C:\\Users\\djeun\\IdeaProjects\\DataFlight\\src\\airport-codes_no_comma.csv";
+
+        // Utiliser le chemin passé en paramètre
         try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
             String line = reader.readLine();  // Ignorer la première ligne (en-tête)
             while ((line = reader.readLine()) != null) {
@@ -37,11 +41,12 @@ public class World {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println("Erreur lors de la lecture du fichier.");
+            System.out.println("Erreur lors de la lecture du fichier : " + fileName);
         }
     }
 
-    public Aeroport findNearest(double longitude, double latitude) {
+    // Trouver l'aéroport le plus proche d'un point (latitude, longitude)
+    public Aeroport findNearestAirport(double longitude, double latitude) {
         Aeroport aeroportLePlusProche = null;
         double distanceMin = Double.MAX_VALUE;
 
@@ -58,20 +63,24 @@ public class World {
         return aeroportLePlusProche;
     }
 
+    // Calcul de la distance entre deux points GPS
+    public double calculDistance(double lat1, double lon1, double lat2, double lon2) {
+        return Math.sqrt(Math.pow(Math.toRadians(lat2 - lat1), 2) +
+                Math.pow(Math.toRadians(lon2 - lon1) * Math.cos(Math.toRadians((lat1 + lat2) / 2)), 2));
+    }
+
     // Trouver un aéroport par son code IATA
     public Aeroport findByCode(String codeIATA) {
         for (Aeroport aeroport : listeAeroports) {
-            if (aeroport.getCodeIATA().equals(codeIATA)) {
+            if (aeroport.getCodeIATA().equals(codeIATA)) {  // Correction ici
                 return aeroport;
             }
         }
         return null;
     }
 
-
     // Méthode pour retourner la liste des aéroports
     public List<Aeroport> getListeAeroports() {
         return listeAeroports;
     }
-
 }

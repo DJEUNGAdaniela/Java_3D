@@ -18,7 +18,7 @@ public class Main {
         }
 
         // Trouver l'aéroport le plus proche de Paris
-        Aeroport aeroportProcheParis = world.findNearest(2.316, 48.866);
+        Aeroport aeroportProcheParis = world.findNearestAirport(2.316, 48.866);
         System.out.println("Aéroport le plus proche de Paris : " + aeroportProcheParis);
 
         // Trouver l'aéroport par son code IATA
