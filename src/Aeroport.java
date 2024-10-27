@@ -35,6 +35,7 @@ public class Aeroport {
         double deltaPhi = Math.toRadians(autre.getLongitude() - this.longitude);
         double moyenneTheta = Math.toRadians((autre.getLatitude() + this.latitude) / 2);
 
+        // Utilisation de la formule Haversine pour calculer la distance
         return Math.sqrt(Math.pow(deltaTheta, 2) + Math.pow(deltaPhi * Math.cos(moyenneTheta), 2));
     }
 

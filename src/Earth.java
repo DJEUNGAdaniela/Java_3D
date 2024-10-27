@@ -1,9 +1,11 @@
 import javafx.animation.AnimationTimer;
 import javafx.scene.Group;
 import javafx.scene.image.Image;
+import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Sphere;
 import javafx.scene.transform.Rotate;
+import javafx.scene.transform.Translate;
 
 public class Earth extends Group {
     private Sphere sph;
@@ -45,6 +47,35 @@ public class Earth extends Group {
             }
         };
         animationTimer.start();
+    }
 
+    // Méthode pour créer une sphère colorée à un aéroport
+    public Sphere createSphere(Aeroport a, Color color) {
+        // Récupération des coordonnées de l'aéroport
+        double R = 300; // rayon de la sphère Terre
+        double theta = Math.toRadians(a.getLatitude()); // Convertir latitude en radians
+        double phi = Math.toRadians(a.getLongitude()); // Convertir longitude en radians
+
+        // Calcul des coordonnées X, Y, Z
+        double X = R * Math.cos(theta) * Math.sin(phi);
+        double Y = -R * Math.sin(theta); // Facteur de correction
+        double Z = -R * Math.cos(theta) * Math.cos(phi); // Correction ici pour l'axe Z
+
+        // Création de la sphère
+        Sphere sphere = new Sphere(2);
+        PhongMaterial material = new PhongMaterial();
+        material.setDiffuseColor(color);
+        sphere.setMaterial(material);
+
+        // Positionner la sphère aux coordonnées calculées
+        sphere.getTransforms().add(new Translate(X, Y, Z));
+
+        return sphere;
+    }
+
+    // Méthode pour afficher une sphère rouge à l'aéroport donné
+    public void displayRedSphere(Aeroport a) {
+        Sphere redSphere = createSphere(a, Color.RED);
+        this.getChildren().add(redSphere);
     }
 }
