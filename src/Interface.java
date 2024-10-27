@@ -68,9 +68,12 @@ public class Interface extends Application {
                 PickResult pickResult = event.getPickResult();
 
                 // Vérifiez que pickResult et les coordonnées de texture ne sont pas null
-                if (pickResult != null && pickResult.getIntersectedNode() instanceof Earth) {
-                        double x = pickResult.getIntersectedTexCoord().getX();
-                        double y = pickResult.getIntersectedTexCoord().getY();
+                if (pickResult != null && pickResult.getIntersectedNode() != null) {
+                        //double x = pickResult.getIntersectedTexCoord().getX();
+                        //double y = pickResult.getIntersectedTexCoord().getY();
+
+                        double x = pickResult.getIntersectedPoint().getX();
+                        double y = pickResult.getIntersectedPoint().getY();
 
                         // Conversion en latitude et longitude
                         double latitude = 180 * (0.5 - y);
