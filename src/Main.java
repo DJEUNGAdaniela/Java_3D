@@ -1,3 +1,6 @@
+import java.io.BufferedReader;
+import java.io.FileReader;
+
 public class Main {
     public static void main(String[] args) {
         // Création d'un objet Aeroport
@@ -8,6 +11,31 @@ public class Main {
 
         // Crée une instance de World en pointant vers le fichier csv
         World world = new World("C:\\Users\\djeun\\IdeaProjects\\DataFlight\\src/airport-codes_no_comma.csv");
+
+        try {
+            // Lire le fichier de test contenant la réponse JSON
+            StringBuilder jsonBuilder = new StringBuilder();
+            BufferedReader br = new BufferedReader(new FileReader("C:\\Users\\djeun\\IdeaProjects\\DataFlight\\src/JsonOrly.txt"));
+            String line;
+
+            // Lire chaque ligne et l'ajouter au StringBuilder
+            while ((line = br.readLine()) != null) {
+                jsonBuilder.append(line);
+            }
+
+            // Convertir le StringBuilder en chaîne de caractères
+            String test = jsonBuilder.toString();
+
+            // Créer une instance de JsonFlightFiller avec le JSON lu
+            JsonFlightFiller jsonFlightFiller = new JsonFlightFiller(test, world);
+
+            // Afficher la liste des vols récupérés
+            for (Flight flight : jsonFlightFiller.getList()) {
+                System.out.println(flight);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         // Affiche le nombre d'aéroports trouvés
         System.out.println("Nombre d'aéroports trouvés : " + world.getListeAeroports().size());

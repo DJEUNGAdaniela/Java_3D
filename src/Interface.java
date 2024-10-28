@@ -8,9 +8,16 @@ import javafx.scene.layout.Pane;
 import javafx.scene.transform.Translate;
 import javafx.stage.Stage;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.ArrayList;
+
 public class Interface extends Application {
 
     private World w; // Instance de World pour gérer les aéroports
+    private Earth earth; // Instance d'Earth pour gérer les sphères colorées
 
     @Override
     public void start(Stage primaryStage) {
@@ -20,7 +27,7 @@ public class Interface extends Application {
         w = new World("C:\\Users\\djeun\\IdeaProjects\\DataFlight\\src\\airport-codes_no_comma.csv");
 
         // Création de la scène principale (la terre)
-        Earth earth = new Earth();  // Objet Earth contenant la sphère
+        earth = new Earth();  // Objet Earth contenant la sphère
         Pane root = new Pane(earth);  // Ajout de la sphère au root
         Scene scene = new Scene(root, 800, 600, true);
 
@@ -36,7 +43,11 @@ public class Interface extends Application {
         addZoomHandler(scene, camera);
 
         // Ajout de l'EventHandler pour le clic droit
-        addRightClickHandler(scene);
+        addRightClickHandler(scene, earth);
+
+        // Appel de la méthode pour interroger l'API et afficher les boules jaunes pour les vols
+        String apiUrl = "https://api.aviationstack.com/v1/flights?access_key=b4f5c2a40ec4189a73c224981274d1c9&arr_iata=CDG"; // Remplacer par l'URL de l'API
+        queryAPIAndDisplayFlights(apiUrl, w);
 
         primaryStage.setScene(scene);
         primaryStage.show();
@@ -61,7 +72,7 @@ public class Interface extends Application {
     }
 
     // Gestionnaire d'événements pour le clic droit
-    private void addRightClickHandler(Scene scene) {
+    private void addRightClickHandler(Scene scene, Earth earth) {
         scene.setOnMouseClicked(event -> {
             if (event.getButton() == MouseButton.SECONDARY) {
                 // Obtenir le résultat de la détection d'intersection
@@ -69,26 +80,65 @@ public class Interface extends Application {
 
                 // Vérifiez que pickResult et les coordonnées de texture ne sont pas null
                 if (pickResult != null && pickResult.getIntersectedNode() != null) {
-                        //double x = pickResult.getIntersectedTexCoord().getX();
-                        //double y = pickResult.getIntersectedTexCoord().getY();
+                    double x = pickResult.getIntersectedPoint().getX();
+                    double y = pickResult.getIntersectedPoint().getY();
 
-                        double x = pickResult.getIntersectedPoint().getX();
-                        double y = pickResult.getIntersectedPoint().getY();
+                    // Conversion en latitude et longitude
+                    double latitude = 180 * (0.5 - y);
+                    double longitude = 360 * (x - 0.5);
 
-                        // Conversion en latitude et longitude
-                        double latitude = 180 * (0.5 - y);
-                        double longitude = 360 * (x - 0.5);
+                    // Recherche de l'aéroport le plus proche via World
+                    Aeroport nearestAirport = w.findNearestAirport(longitude, latitude);
 
-                        // Recherche de l'aéroport le plus proche via World
-                        Aeroport nearestAirport = w.findNearestAirport(longitude, latitude);
+                    // Affiche l'aéroport le plus proche dans la console
+                    System.out.println("Aéroport le plus proche : " + nearestAirport);
+                    earth.displayRedSphere(nearestAirport);
+                } else {
+                    System.out.println("Clic en dehors de l'objet ou intersection non détectée.");
+                }
+            }
+        });
+    }
 
-                        // Affiche l'aéroport le plus proche dans la console
-                        System.out.println("Aéroport le plus proche : " + nearestAirport);}
-                    else {
-                        System.out.println("Clic en dehors de l'objet ou intersection non détectée.");
+    // Méthode pour interroger l'API et afficher les boules jaunes
+    public void queryAPIAndDisplayFlights(String apiUrl, World world) {
+        try {
+            // Initialiser HttpClient
+            HttpClient client = HttpClient.newHttpClient();
+
+            // Créer la requête
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(apiUrl))
+                    .GET()
+                    .build();
+
+            // Envoyer la requête et obtenir la réponse
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            // Vérifier si la requête est réussie
+            if (response.statusCode() == 200) {
+                String jsonResponse = response.body();
+
+                // Créer une instance de JsonFlightFiller pour analyser le JSON
+                JsonFlightFiller jsonFlightFiller = new JsonFlightFiller(jsonResponse, world);
+
+                // Récupérer la liste des vols
+                ArrayList<Flight> flights = jsonFlightFiller.getList();
+
+                // Afficher chaque aéroport de départ en utilisant displayYellowBall
+                for (Flight flight : flights) {
+                    Aeroport departureAirport = world.findByCode(flight.getDepartureCode());
+                    if (departureAirport != null) {
+                        earth.displayYellowSphere(departureAirport); // Utilise la méthode displayYellowSphere de Earth
                     }
                 }
-        });
+            } else {
+                System.out.println("Erreur lors de la requête HTTP. Code : " + response.statusCode());
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public static void main(String[] args) {

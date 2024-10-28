@@ -78,4 +78,10 @@ public class Earth extends Group {
         Sphere redSphere = createSphere(a, Color.RED);
         this.getChildren().add(redSphere);
     }
+
+    // Méthode pour afficher une sphère jaune à l'aéroport donné (départ)
+    public void displayYellowSphere(Aeroport a) {
+        Sphere yellowSphere = createSphere(a, Color.YELLOW);
+        this.getChildren().add(yellowSphere);
+    }
 }
